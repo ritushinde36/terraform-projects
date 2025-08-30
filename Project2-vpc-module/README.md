@@ -25,25 +25,7 @@ This is a reusable Terraform module to provision a VPC network on AWS. This modu
 - Deploys a __NAT Gateway__ to provide secure internet access for private subnets
 
 - Sets up __route tables and associates__ them with subnets for proper public and private routing
-### 📂 Project Structure
 
-```
-Project2-vpc-module/
-├── modules/
-│   └── vpc-module/
-│       ├── elastic-ip.tf            # Elastic IP for NAT Gateway in each Public subnet
-│       ├── internet-gateway.tf      # Internet Gateway resource
-│       ├── nat-gateway.tf           # NAT Gateway resource in each Public subnet
-│       ├── route_table.tf           # Route tables and associations
-│       ├── subnets.tf               # Public, private, and DB subnets
-│       ├── variables.tf             # Input variables for the module
-│       ├── vpc.auto.tfvars          # Variable values (auto-loaded)
-│       └── vpc.tf                   # VPC resource definition
-├── Project2-vpc-module.png          # Exported PNG of the diagram
-├── variables.tf                     # Root-level variables
-├── versions.tf                      # Terraform and provider configurations
-└── vpc.tf                           # Root-level module call
-```
 
 ### 📂 Project Structure
 
@@ -119,7 +101,7 @@ terraform apply
 terraform destroy
 ```
 
-### 🛠 Inputs  
+### 🔧 Inputs  
 
 
 | Name                     | Type   | Default | Description |
