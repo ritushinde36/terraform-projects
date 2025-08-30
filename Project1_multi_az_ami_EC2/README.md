@@ -27,7 +27,7 @@ This Terraform project automates the deployment of EC2 instances across all avai
 - Self-Configuring Instances – User data script automatically installs Apache HTTPD and displays the availability zone name on the default webpage.
 ### 📂 Project Structure
 
-terraform-ec2-multi-az/  
+Project1_multi_az_ami_EC2/  
 ├── README.md # Project documentation  
 ├── provider.tf # Terraform + AWS provider configs  
 ├── variables.tf # Input variables  
