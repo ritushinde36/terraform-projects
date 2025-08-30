@@ -28,33 +28,17 @@ This Terraform project automates the deployment of EC2 instances across all avai
 ### 📂 Project Structure
 
 Project1_multi_az_ami_EC2/  
-├── README.md # Project documentation  
-├── provider.tf # Terraform + AWS provider configs  
-├── variables.tf # Input variables  
-├── outputs.tf # Output values (AZ → Instance ID map)  
-  
-├── ami.tf # Fetch latest AMI  
-├── availability_zones.tf # Fetch supported AZs for instance type  
-├── ec2.tf # EC2 deployment in supported AZs  
-├── security_group.tf # Security group with ingress/egress rules  
-
-├── user_data.sh # Apache installation script  
-└── .gitignore # Ignore .terraform, tfstate, etc.  
-### 📂 Project Structure
-
-terraform-ec2-multi-az/  
-├── README.md # Project documentation  
-├── provider.tf # Terraform + AWS provider configs  
-├── variables.tf # Input variables  
-├── outputs.tf # Output values (AZ → Instance ID map)  
-  
-├── ami.tf # Fetch latest AMI  
-├── availability_zones.tf # Fetch supported AZs for instance type  
-├── ec2.tf # EC2 deployment in supported AZs  
-├── security_group.tf # Security group with ingress/egress rules  
-
-├── user_data.sh # Apache installation script  
-└── .gitignore # Ignore .terraform, tfstate, etc.  
+├── README.md               # Project documentation  
+├── provider.tf             # Terraform + AWS provider configs  
+├── variables.tf            # Input variables  
+├── outputs.tf              # Output values (AZ → Instance ID map)  
+├── ami.tf                  # Fetch latest AMI  
+├── availability_zones.tf   # Fetch supported AZs for instance type  
+├── ec2.tf                  # EC2 deployment in supported AZs  
+├── security_group.tf       # Security group with ingress/egress rules  
+├── user_data.sh            # Apache installation script  
+└── .gitignore              # Ignore .terraform, tfstate, etc.  
+ 
 ### 📖 Prerequisites
 
 - Terraform Version ≥ 1.8.3
@@ -66,8 +50,8 @@ terraform-ec2-multi-az/
 
 1. Clone the repository
 ```
-git clone https://github.com/<your-username>/<your-repo>.git
-cd <project_name>
+git clone https://github.com/ritushinde36/terraform-projects.git
+cd Project1_multi_az_ami_EC2
 ```
 
 2. Initialize Terraform
