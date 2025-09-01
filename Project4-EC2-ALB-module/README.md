@@ -144,6 +144,19 @@ terraform apply
 terraform destroy
 ```
 
+### 📤 Terraform Outputs
+
+1. EC2 Instance Creation - Provisioned EC2 instances running in the target subnets.  
+![alt text](./images/ec2.png)
+
+2. Application Load Balancer (ALB) DNS - Public DNS of the ALB routing traffic to EC2 instances in us-east-1a and us-east-1b  
+![alt text](./images/alb-1a.png)  
+![alt text](./images/alb-1b.png)
+
+3. Target Group Association and Load Balancer Health Checks - Target group attached to the ALB, forwarding traffic to EC2 instances in us-east-1a and us-east-1b as well as Health status of registered EC2 instances behind the ALB.   
+![alt text](./images/tg.png)  
+
+
 ### 🔧 Inputs  
 
 #### 📦 VPC Module (vpc-module)
@@ -218,3 +231,5 @@ The following diagram shows the architecture created by the examples using the c
 - 💼 [LinkedIn](https://www.linkedin.com/in/ritu-shinde-345a98323)  
 - 💻 [GitHub](https://github.com/ritushinde36)  
 - 🌐 [Blog](https://ritushinde.hashnode.dev/)  
+
+
