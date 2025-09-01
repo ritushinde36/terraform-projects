@@ -100,7 +100,7 @@ Project3-EC2-SG-EIP-module/
 1. Clone the repository
 ```
 git clone https://github.com/ritushinde36/terraform-projects.git
-cd Project3-EC2-SG-EIP-module
+cd Project4-EC2-ALB-module
 ```
 
 2. Refer the [main.tf](./main.tf)
