@@ -108,10 +108,10 @@ terraform destroy
 |--------------------------|--------|---------|-------------|
 | `vpc_cidr_block`         | string | n/a     | CIDR block for the VPC |
 | `vpc_name`               | string | TF_VPC  | Name to assign to the VPC |
-| `avail_zones`            | list   | n/a     | List of availability zones to deploy subnets into |
-| `public_subnet_cidrs`    | list   | n/a     | List of public subnet CIDR blocks |
-| `private_subnet_cidrs`   | list   | n/a     | List of private subnet CIDR blocks |
-| `database_subnet_cidrs`  | list   | n/a     | List of database subnet CIDR blocks |
+| `avail_zones`            | list(string)   | n/a     | List of availability zones to deploy subnets into |
+| `public_subnet_cidrs`    | list(string)   | n/a     | List of public subnet CIDR blocks |
+| `private_subnet_cidrs`   | list(string)   | n/a     | List of private subnet CIDR blocks |
+| `database_subnet_cidrs`  | list(string)   | n/a     | List of database subnet CIDR blocks |
 | `enable_internet_gateway`| bool   | false   | Whether to create an Internet Gateway |
 | `enable_NAT_gateway`     | bool   | false   | Whether to create a NAT Gateway |
 
