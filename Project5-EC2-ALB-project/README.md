@@ -1,10 +1,21 @@
 
-# 🚀 Terraform - EC2 & ALB Module
+# 🚀 Terraform - EC2 & ALB Project
 
 ### 📌 Overview
 
-This project provisions AWS infrastructure using Terraform.
-It leverages custom modules for VPC, EC2, Security Groups, ALB and EIP to create a scalable and a highly available AWS environment
+This project demonstrates an industry-grade application architecture where the Application Load Balancer (ALB) uses path-based routing to direct incoming traffic to specific EC2 instances.
+
+Requests to <ALB_DNS>/login.html are routed to the EC2 instance serving the login page.  
+Requests to <ALB_DNS>/home.html are routed to the EC2 instance serving the home page.
+
+It leverages the following custom modules - 
+- Application Load Balancer Listner Module
+- Application Load Balancer Module
+- EC2 Module
+- EIP Module
+- SG Module
+- Target Group Module
+- VPC Module
 
 ### 🛠️ Tech Stack
 
@@ -19,14 +30,25 @@ It leverages custom modules for VPC, EC2, Security Groups, ALB and EIP to create
 
 - EC2, Security Group ,EIP Module → Launches EC2 instances and bastion hosts in the configured VPC & subnets. Manages ingress/egress rules for Bastion and private instances.Associates Elastic IPs with EC2 instances.Refer the git repo for this module and example - [ec2-sg-eip-module](https://github.com/ritushinde36/terraform-projects/tree/master/Project3-EC2-SG-EIP-module)
 
-- ALB Module - Creates a DNS name to forward traffic to the EC2 instances present in a subnet across multiple availability zones
+- ALB Module - Creates a DNS name to forward traffic to the EC2 instances present in a subnet across multiple availability zones.Refer the git repo for this module and example - [ec2-alb-module](https://github.com/ritushinde36/terraform-projects/tree/master/Project4-EC2-ALB-module)
 
+- The Application Load Balancer (ALB) is configured with path-based routing rules to intelligently distribute traffic. When a request reaches the ALB, it inspects the URL path and forwards the traffic to the appropriate target group based on predefined routing conditions. Each target group is linked to specific EC2 instances that serve different parts of the application, ensuring efficient, scalable, and organized traffic handling.
+
+    Example Flow:
+
+    1. A client sends a request to the ALB DNS endpoint.
+
+    2. The ALB evaluates the request path:  
+        - If the request is /login.html, traffic is routed to the Login Target Group, which forwards it to EC2 instances hosting the login page.  
+        - If the request is /home.html, traffic is routed to the Home Target Group, which forwards it to EC2 instances hosting the home page.
+
+    3. The selected EC2 instance responds back through the ALB, and the response is returned to the client.
 
 
 ### 📂 Project Structure
 
 ```
-Project4-EC2-ALB-module/
+Project5-EC2-ALB-project/
 ├── modules/
 │   ├── ec2-module/                     # EC2 instance creation
 │   │   ├── data.tf                     # Data sources for fetching latest AMI
@@ -58,6 +80,16 @@ Project4-EC2-ALB-module/
 │   │   ├── alb.tf                      # ALB resource definition
 │   │   ├── output.tf                   # Outputs
 │   │   └── variables.tf                # Input variables for ALB module
+|   | 
+│   ├── alb-listener-module/            # ALB Listener configuration
+│   │   ├── alb-listener.tf             # ALB Listener resource definition
+│   │   ├── outputs.tf                  # Outputs
+│   │   └── variables.tf                # Input variables for ALB Listener module
+│   │
+│   ├── tg-module/                      # Target Group configuration
+│   │   ├── tg.tf                       # Target Group & attachment resouce definition
+│   │   ├── outputs.tf                  # Outputs
+│   │   └── variables.tf                # Input variables for Target Group module
 │   │
 │   └── clb-module/                     # Classic Load Balancer
 │       ├── clb.tf                      # CLB resource definition and example usage
@@ -69,8 +101,10 @@ Project4-EC2-ALB-module/
 ├── resource-information/               # Infra documentation
 │   └── vpc-creation-details.txt        # Info about VPC after creation
 │
-├── user_data/                          # EC2 user data scripts
-│   └── private_user_data_script.sh     # Script for private instance bootstrap
+├── user_data/                              # EC2 user data scripts
+│   ├── home_user_data_script.sh            # Script to bootstrap instance with home.html
+│   ├── login_user_data_script.sh           # Script to bootstrap instance with login.html
+│   └── private_user_data_script.sh         # Script for private instance bootstrap (general script)
 │
 ├── main.tf                             # Root module configuration (calls modules)
 ├── variables.tf                        # Global input variables
@@ -85,7 +119,7 @@ Project4-EC2-ALB-module/
 ├── terraform.tfvars                    # Default variables
 │
 ├── README.md                           # Project documentation
-└── Project4-EC2-ALB.png                # Architecture diagram
+└── EC2-ALB-project.png                 # Architecture diagram
 
 ```
 
@@ -100,7 +134,7 @@ Project4-EC2-ALB-module/
 1. Clone the repository
 ```
 git clone https://github.com/ritushinde36/terraform-projects.git
-cd Project4-EC2-ALB-module
+cd Project5-EC2-ALB-project
 ```
 
 2. Refer the [main.tf](./main.tf)
@@ -120,6 +154,8 @@ It is creating the following resources -
     - ALB security group that will allow http traffic as ingress
     - Target group containing both the the EC2 instances in the private subnets
     - ALB listener attached to the ALB that forward http traffic to the Target Group
+        - Requests to <ALB_DNS>/login.html are routed to the EC2 instance serving the login page.
+        - Requests to <ALB_DNS>/home.html are routed to the EC2 instance serving the home page.
 
 
 
@@ -146,15 +182,26 @@ terraform destroy
 
 ### 📤 Terraform Outputs
 
-1. EC2 Instance Creation - Provisioned EC2 instances running in the private subnets.  
-![alt text](./images/ec2.png)
+1. EC2 Instance Creation - Provisioned EC2 instances running in the private subnets
 
-2. Application Load Balancer (ALB) DNS - Public DNS of the ALB routing traffic to EC2 instances in us-east-1a and us-east-1b  
-![alt text](./images/alb-1a.png)  
-![alt text](./images/alb-1b.png)
+![alt text](./images/image.png) 
 
-3. Target Group Association and Load Balancer Health Checks - Target group attached to the ALB, forwarding traffic to EC2 instances in us-east-1a and us-east-1b as well as Health status of registered EC2 instances behind the ALB.   
-![alt text](./images/tg.png)  
+2. Target groups created for the EC2 instance hosting the home page and the login page
+
+![alt text](./images/image-1.png)
+
+3. Application Load Balancer (ALB) DNS - Public DNS of the ALB routing traffic to EC2 instances in us-east-1a and us-east-1b for the login page. Example - <ALB_DNS>:81/login.html
+
+
+![alt text](./images/image-2.png)
+![alt text](./images/image-3.png)  
+
+4. Application Load Balancer (ALB) DNS - Public DNS of the ALB routing traffic to EC2 instances in us-east-1a and us-east-1b for the home page. Example - <ALB_DNS>:80/home.html
+
+
+![alt text](./images/image-4.png)
+![alt text](./images/image-5.png)
+
 
 
 ### 🔧 Inputs  
@@ -215,13 +262,31 @@ terraform destroy
 | `app_lb_subnet_ids`        | list(string)   | n/a     | Subnet IDs for ALB (usually public)                |
 | `is_alb_internal`          | bool   | false   | Whether ALB is internal                            |
 
+### 📡ALB Listener Module Inputs
+| Name                      | Type   | Default  | Description                                                          |
+| ------------------------- | ------ | -------- | -------------------------------------------------------------------- |
+| `app_lb_target_group_arn` | string | n/a      | ARN of the target group to which the ALB listener forwards traffic   |
+| `app_lb_arn`              | string | n/a      | ARN of the Application Load Balancer                                 |
+| `app_lb_port`             | string |   n/a | Port on which the ALB listener listens                               |
+| `app_lb_protocol`         | string | n/a` | Protocol used by the ALB listener (e.g., HTTP or HTTPS)              |
+
+### 🎯   Target Group Module Inputs
+| Name                          | Type         | Default  | Description                                                            |
+| ----------------------------- | ------------ | -------- | ---------------------------------------------------------------------- |
+| `app_lb_target_group_name`    | string       | n/a      | Name of the Target Group             |
+| `app_lb_port`                 | number       | n/a      | Port used by the target group  |
+| `app_lb_protocol`             | string       | n/a | Protocol used by the target group (e.g., HTTP or HTTPS)                |
+| `alb_vpc_id`                  | string       | n/a      | VPC ID in which the target group will be created                       |
+| `app_lb_tg_instance_ids`      | list(string) | n/a      | List of EC2 instance IDs to register with the target group             |
+| `app_lb_tg_health_check_path` | string       | `"/"`    | Health check path for the target group (e.g., `/login.html`)           |
+
 
 
 ### 🗺️ Architecture Diagram
 
 The following diagram shows the architecture created by the examples using the custom modules:
 
-![image info](./Project4-EC2-ALB.png)
+![image info](./Project5-EC2-ALB-project.png)
 
 ### 🙋 Author  
 
