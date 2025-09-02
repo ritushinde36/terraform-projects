@@ -1,12 +1,16 @@
 
-# 🚀 Terraform - EC2 & ALB Project
+# 🚀 Terraform - RDS
+
+![status](https://img.shields.io/badge/Status-Work%20in%20Progress-yellow)  
+🚧 __WIP Notice: I’m actively building this project.  
+Feel free to use it as a reference, but some features may not be complete yet.__
+
+---
 
 ### 📌 Overview
 
-This project demonstrates an industry-grade application architecture where the Application Load Balancer (ALB) uses path-based routing to direct incoming traffic to specific EC2 instances.
+This project demonstrates an industry-grade application architecture where the Application Load Balancer (ALB) uses path-based routing to direct incoming traffic to specific EC2 instances as well as creates an RDS instance
 
-Requests to <ALB_DNS>/login.html are routed to the EC2 instance serving the login page.  
-Requests to <ALB_DNS>/home.html are routed to the EC2 instance serving the home page.
 
 It leverages the following custom modules - 
 - Application Load Balancer Listner Module
@@ -16,6 +20,7 @@ It leverages the following custom modules -
 - SG Module
 - Target Group Module
 - VPC Module
+- RDS Module
 
 ### 🛠️ Tech Stack
 
@@ -32,23 +37,14 @@ It leverages the following custom modules -
 
 - ALB Module - Creates a DNS name to forward traffic to the EC2 instances present in a subnet across multiple availability zones.Refer the git repo for this module and example - [ec2-alb-module](https://github.com/ritushinde36/terraform-projects/tree/master/Project4-EC2-ALB-module)
 
-- The Application Load Balancer (ALB) is configured with path-based routing rules to intelligently distribute traffic. When a request reaches the ALB, it inspects the URL path and forwards the traffic to the appropriate target group based on predefined routing conditions. Each target group is linked to specific EC2 instances that serve different parts of the application, ensuring efficient, scalable, and organized traffic handling.
+- The Application Load Balancer (ALB) is configured with path-based routing rules to intelligently distribute traffic. When a request reaches the ALB, it inspects the URL path and forwards the traffic to the appropriate target group based on predefined routing conditions. Refer the git repo for this module and example - [ec2-alb-project](https://github.com/ritushinde36/terraform-projects/tree/master/Project5-EC2-ALB-project)
 
-    Example Flow:
-
-    1. A client sends a request to the ALB DNS endpoint.
-
-    2. The ALB evaluates the request path:  
-        - If the request is /login.html, traffic is routed to the Login Target Group, which forwards it to EC2 instances hosting the login page.  
-        - If the request is /home.html, traffic is routed to the Home Target Group, which forwards it to EC2 instances hosting the home page.
-
-    3. The selected EC2 instance responds back through the ALB, and the response is returned to the client.
-
+- Creates an RDS instance in the specifed subnet
 
 ### 📂 Project Structure
 
 ```
-Project5-EC2-ALB-project/
+Project6-rds-module/
 ├── modules/
 │   ├── ec2-module/                     # EC2 instance creation
 │   │   ├── data.tf                     # Data sources for fetching latest AMI
@@ -91,6 +87,11 @@ Project5-EC2-ALB-project/
 │   │   ├── outputs.tf                  # Outputs
 │   │   └── variables.tf                # Input variables for Target Group module
 │   │
+│   ├── rds-module/                     # RDS configuration
+│   │   ├── rds.tf                      # RDS resouce definition
+│   │   ├── outputs.tf                  # Outputs
+│   │   └── variables.tf                # Input variables for RDS module
+│   │
 │   └── clb-module/                     # Classic Load Balancer
 │       ├── clb.tf                      # CLB resource definition and example usage
 │       ├── output.tf                   # Outputs
@@ -104,22 +105,33 @@ Project5-EC2-ALB-project/
 ├── user_data/                              # EC2 user data scripts
 │   ├── home_user_data_script.sh            # Script to bootstrap instance with home.html
 │   ├── login_user_data_script.sh           # Script to bootstrap instance with login.html
+│   ├── app_user_data_template.tmpl         # Script for EC2 to connect to the RDS instance
 │   └── private_user_data_script.sh         # Script for private instance bootstrap (general script)
 │
-├── main.tf                             # Root module configuration (calls modules)
-├── variables.tf                        # Global input variables
-├── versions.tf                         # Provider + Terraform version constraints
-├── local.tf                            # Local values for reuse in configs
+├── alb.tf                                  # Application Load Balancer configuration  
+├── ec2.tf                                  # EC2 instance configuration  
+├── eip.tf                                  # Elastic IP configuration  
+├── listener.tf                             # ALB Listener configuration  
+├── local.tf                                # Local values definitions  
+├── null_resource.tf                        # Null resources for provisioning  
+├── rds.tf                                  # RDS instance configuration  
+├── sg.tf                                   # Security Group configuration  
+├── tg.tf                                   # Target Group configuration  
+├── vpc.tf                                  # VPC configuration  
+├── variables.tf                            # Global input variables
+├── versions.tf                             # Provider + Terraform version constraints
+├── local.tf                                # Local values for reuse in configs
 │
-├── ec2.auto.tfvars                     # Variable file for EC2 module
-├── sg.auto.tfvars                      # Variable file for SG module
-├── vpc.auto.tfvars                     # Variable file for VPC module
-├── alb.auto.tfvars                     # Variable file for ALB module
+├── ec2.auto.tfvars                         # Variable file for EC2 module
+├── sg.auto.tfvars                          # Variable file for SG module
+├── vpc.auto.tfvars                         # Variable file for VPC module
+├── alb.auto.tfvars                         # Variable file for ALB module
+├── rds.auto.tfvars                         # Variable file for RDS module 
 │
-├── terraform.tfvars                    # Default variables
+├── terraform.tfvars                        # Default variables
 │
-├── README.md                           # Project documentation
-└── EC2-ALB-project.png                 # Architecture diagram
+├── README.md                               # Project documentation
+└── Project6-rds-module.png                 # Architecture diagram
 
 ```
 
@@ -134,7 +146,7 @@ Project5-EC2-ALB-project/
 1. Clone the repository
 ```
 git clone https://github.com/ritushinde36/terraform-projects.git
-cd Project5-EC2-ALB-project
+cd Project6-rds-module
 ```
 
 2. Refer the [main.tf](./main.tf)
@@ -155,7 +167,8 @@ It is creating the following resources -
     - Target group containing both the the EC2 instances in the private subnets
     - ALB listener attached to the ALB that forward http traffic to the Target Group
         - Requests to <ALB_DNS>/login.html are routed to the EC2 instance serving the login page.
-        - Requests to <ALB_DNS>/home.html are routed to the EC2 instance serving the home page.
+        - Requests to <ALB_DNS>/home.html are routed to the EC2 instance serving the home page.  
+    - Creates an RDS instance in the specified subnet
 
 
 
@@ -179,30 +192,6 @@ terraform apply
 ```
 terraform destroy
 ```
-
-### 📤 Terraform Outputs
-
-1. EC2 Instance Creation - Provisioned EC2 instances running in the private subnets
-
-![alt text](./images/image.png) 
-
-2. Target groups created for the EC2 instance hosting the home page and the login page
-
-![alt text](./images/image-1.png)
-
-3. Application Load Balancer (ALB) DNS - Public DNS of the ALB routing traffic to EC2 instances in us-east-1a and us-east-1b for the login page. Example - <ALB_DNS>:81/login.html
-
-
-![alt text](./images/image-2.png)
-![alt text](./images/image-3.png)  
-
-4. Application Load Balancer (ALB) DNS - Public DNS of the ALB routing traffic to EC2 instances in us-east-1a and us-east-1b for the home page. Example - <ALB_DNS>:80/home.html
-
-
-![alt text](./images/image-4.png)
-![alt text](./images/image-5.png)
-
-
 
 ### 🔧 Inputs  
 
@@ -280,13 +269,27 @@ terraform destroy
 | `app_lb_tg_instance_ids`      | list(string) | n/a      | List of EC2 instance IDs to register with the target group             |
 | `app_lb_tg_health_check_path` | string       | `"/"`    | Health check path for the target group (e.g., `/login.html`)           |
 
+#### ⚙️ RDS Module Inputs  (rds-module)
+
+| Name                   | Type     | Default | Description                                                                 |
+| ---------------------- | -------- | ------- | --------------------------------------------------------------------------- |
+| `rds_name`             | string   | n/a     | Identifier/name for the RDS instance                                        |
+| `rds_username`         | string   | n/a     | Master username for the RDS database                                        |
+| `rds_password`         | string   | n/a     | Master password for the RDS database                                        |
+| `rds_database_subnets` | list(string)     | n/a     | List of database subnet IDs where the RDS instance will be deployed         |
+| `rds_security_group_id`| list(string)     | n/a     | Security group IDs associated with the RDS instance                         |
+| `rds_engine`           | string   | n/a     | Database engine (e.g., `mysql`, `postgres`, `mariadb`)                      |
+| `rds_engine_version`   | string   | n/a     | Version of the database engine                                              |
+| `rds_instance_class`   | string   | n/a     | Instance type/class for the RDS (e.g., `db.t3.micro`)                       |
+| `rds_allocated_storage`| number   | n/a     | Amount of storage (in GB) allocated for the RDS instance                    |
+| `rds_port`             | number   | n/a     | Port on which the database will accept connections (default usually `3306`) |
 
 
 ### 🗺️ Architecture Diagram
 
 The following diagram shows the architecture created by the examples using the custom modules:
 
-![image info](./Project5-EC2-ALB-project.png)
+![image info](./Project6-rds-module.png  )
 
 ### 🙋 Author  
 

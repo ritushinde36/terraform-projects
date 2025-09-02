@@ -1,0 +1,10 @@
+rds_sg_name = "RDS-SG"
+rds_sg_description = "allow ingress traffic from the VPC on port 3306"
+rds_name = "app_rds"
+rds_username = "***"
+rds_password = "***"
+rds_engine = "mysql"
+rds_engine_version = "8.0"
+rds_instance_class = "db.t3.micro"
+rds_allocated_storage = 20
+rds_port = 3360
