@@ -149,8 +149,7 @@ git clone https://github.com/ritushinde36/terraform-projects.git
 cd Project6-rds-module
 ```
 
-2. 
-It is creating the following resources - 
+2. It is creating the following resources - 
     - VPC
     - Bastion host present in the public subnets
     - EC2 private hosts present in the private subnets
