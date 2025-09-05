@@ -1,26 +1,31 @@
 
-# 🚀 Terraform - RDS
-
-![status](https://img.shields.io/badge/Status-Work%20in%20Progress-yellow)  
-🚧 __WIP Notice: I’m actively building this project.  
-Feel free to use it as a reference, but some features may not be complete yet.__
-
----
+# 🚀 Terraform - EC2 & ALB & ASG with Target Tracking & SNS Alerts Module
 
 ### 📌 Overview
 
-This project demonstrates an industry-grade application architecture where the Application Load Balancer (ALB) uses path-based routing to direct incoming traffic to specific EC2 instances as well as creates an RDS instance
+This project provisions a highly available and scalable web application infrastructure on AWS using Terraform.
+
+An Application Load Balancer (ALB) distributes traffic across EC2 instances.
+
+The EC2 instances run inside an Auto Scaling Group (ASG) for elasticity and fault tolerance.
+
+A Target Tracking Scaling Policy ensures the number of instances scales in/out automatically based on average CPU utilization and ALB requests per target.
+
+An Amazon CloudWatch Alarm is triggered when scaling actions are required.
+
+The alarm is connected to an SNS Topic, which sends email notifications for scaling events.
 
 
 It leverages the following custom modules - 
 - Application Load Balancer Listner Module
 - Application Load Balancer Module
+- Auto Scaling Module
 - EC2 Module
 - EIP Module
 - SG Module
 - Target Group Module
 - VPC Module
-- RDS Module
+- SNS Module
 
 ### 🛠️ Tech Stack
 
@@ -37,20 +42,31 @@ It leverages the following custom modules -
 
 - ALB Module - Creates a DNS name to forward traffic to the EC2 instances present in a subnet across multiple availability zones.Refer the git repo for this module and example - [ec2-alb-module](https://github.com/ritushinde36/terraform-projects/tree/master/Project4-EC2-ALB-module)
 
-- The Application Load Balancer (ALB) is configured with path-based routing rules to intelligently distribute traffic. When a request reaches the ALB, it inspects the URL path and forwards the traffic to the appropriate target group based on predefined routing conditions. Refer the git repo for this module and example - [ec2-alb-project](https://github.com/ritushinde36/terraform-projects/tree/master/Project5-EC2-ALB-project)
+- ASG Module - To ensure the number of instances scales in/out automatically based on average CPU utilization and ALB requests per target
 
-- Creates an RDS instance in the specifed subnet
+- SNS Module - To send email notification for the scaling action
 
 ### 📂 Project Structure
 
 ```
-Project6-rds-module/
+Project7-ASG-SNS-module/
 ├── modules/
 │   ├── ec2-module/                     # EC2 instance creation
 │   │   ├── data.tf                     # Data sources for fetching latest AMI
 │   │   ├── ec2.tf                      # EC2 resource definitions
 │   │   ├── output.tf                   # Outputs (instance IDs, public IPs, private IPs)
 │   │   └── variables.tf                # Input variables for EC2 module
+│   │
+│   ├── asg-module/                     # Auto Scaling Group (ASG) module
+│   │   ├── asg.tf                    # Defines ASG, Launch Template, and scaling policies
+│   │   ├── data.tf                   # Data sources for AMI Lookup
+│   │   ├── output.tf                 # Outputs 
+│   │   └── variables.tf              # Input variables for the ASG module
+│   │
+│   ├── sns-module/                   # SNS Terraform module
+│   │   ├── output.tf                 # Outputs for SNS resources
+│   │   ├── sns.tf                    # Main configuration for SNS topic and subscriptions
+│   │   └── variables.tf              # Input variables for the SNS module
 │   │
 │   ├── eip-module/                     # Elastic IP assignment to instance
 │   │   ├── eip.tf                      # Elastic IP resource definition
@@ -87,11 +103,6 @@ Project6-rds-module/
 │   │   ├── outputs.tf                  # Outputs
 │   │   └── variables.tf                # Input variables for Target Group module
 │   │
-│   ├── rds-module/                     # RDS configuration
-│   │   ├── rds.tf                      # RDS resouce definition
-│   │   ├── outputs.tf                  # Outputs
-│   │   └── variables.tf                # Input variables for RDS module
-│   │
 │   └── clb-module/                     # Classic Load Balancer
 │       ├── clb.tf                      # CLB resource definition and example usage
 │       ├── output.tf                   # Outputs
@@ -103,12 +114,11 @@ Project6-rds-module/
 │   └── vpc-creation-details.txt        # Info about VPC after creation
 │
 ├── user_data/                              # EC2 user data scripts
-│   ├── home_user_data_script.sh            # Script to bootstrap instance with home.html
-│   ├── login_user_data_script.sh           # Script to bootstrap instance with login.html
-│   ├── app_user_data_template.tmpl         # Script for EC2 to connect to the RDS instance
-│   └── private_user_data_script.sh         # Script for private instance bootstrap (general script)
+│   └── home_user_data_script.sh            # Script to bootstrap instance with home.html
 │
 ├── alb.tf                                  # Application Load Balancer configuration  
+├── asg.tf                                  # Auto Scaling Group configuration  
+├── sns.tf                                  # SNS configuration  
 ├── ec2.tf                                  # EC2 instance configuration  
 ├── eip.tf                                  # Elastic IP configuration  
 ├── listener.tf                             # ALB Listener configuration  
@@ -123,15 +133,18 @@ Project6-rds-module/
 ├── local.tf                                # Local values for reuse in configs
 │
 ├── ec2.auto.tfvars                         # Variable file for EC2 module
+├── sns.auto.tfvars                         # Variable file for SNS module
 ├── sg.auto.tfvars                          # Variable file for SG module
 ├── vpc.auto.tfvars                         # Variable file for VPC module
 ├── alb.auto.tfvars                         # Variable file for ALB module
 ├── rds.auto.tfvars                         # Variable file for RDS module 
+├── asg.auto.tfvars                         # Variable file for ASG module 
 │
 ├── terraform.tfvars                        # Default variables
 │
 ├── README.md                               # Project documentation
-└── Project6-rds-module.png                 # Architecture diagram
+└── Project7-ASG-SNS-module.png                 # Architecture diagram
+
 
 ```
 
@@ -146,7 +159,7 @@ Project6-rds-module/
 1. Clone the repository
 ```
 git clone https://github.com/ritushinde36/terraform-projects.git
-cd Project6-rds-module
+cd Project7-ASG-SNS-module
 ```
 
 2. 
@@ -166,10 +179,11 @@ It is creating the following resources -
     - Target group containing both the the EC2 instances in the private subnets
     - ALB listener attached to the ALB that forward http traffic to the Target Group
         - Requests to <ALB_DNS>/login.html are routed to the EC2 instance serving the login page.
-        - Requests to <ALB_DNS>/home.html are routed to the EC2 instance serving the home page.  
-    - Creates an RDS instance in the specified subnet
-
-
+        - Requests to <ALB_DNS>/home.html are routed to the EC2 instance serving the home page.
+    - EC2 instances are present in an autoscaling group
+    - Target Tracking Policy auto-scales instances based on CPU utilization and ALB request load
+    - An Amazon CloudWatch Alarm is triggered when scaling actions are required
+    - The alarm is connected to an SNS Topic, which sends email notifications for scaling events.
 
 
 3. Initialize Terraform
@@ -268,27 +282,40 @@ terraform destroy
 | `app_lb_tg_instance_ids`      | list(string) | n/a      | List of EC2 instance IDs to register with the target group             |
 | `app_lb_tg_health_check_path` | string       | `"/"`    | Health check path for the target group (e.g., `/login.html`)           |
 
-#### ⚙️ RDS Module Inputs  (rds-module)
+#### 📈 ASG Module Inputs (asg-module)
+| Name                        | Type   | Default | Description                                                               |
+| --------------------------- | ------ | ------- | ------------------------------------------------------------------------- |
+| `lt_name`                   | string | n/a     | Name of the launch template                                               |
+| `lt_instance_type`          | string | n/a     | EC2 instance type for the launch template                                 |
+| `lt_vpc_security_group_ids` | list   | n/a     | List of security group IDs to attach to instances                         |
+| `lt_key_name`               | string | n/a     | Key pair name for SSH access                                              |
+| `lt_user_data`              | string | n/a     | Base64-encoded user data script for EC2 initialization                    |
+| `lt_device_name`            | string | n/a     | Root block device name for the launch template                            |
+| `lt_detailed_monitoring`    | bool   |  n/a ` | Enable or disable detailed monitoring                                     |
+| `asg_name`                  | string | n/a     | Name of the Auto Scaling Group (ASG)                                      |
+| `asg_desired_capacity`      | number | n/a     | Desired number of instances in the ASG                                    |
+| `asg_max_size`              | number | n/a     | Maximum number of instances in the ASG                                    |
+| `asg_min_size`              | number | n/a     | Minimum number of instances in the ASG                                    |
+| `asg_subnet_ids`            | list   | n/a     | List of subnet IDs for ASG placement                                      |
+| `asg_tg_arn`                | string | n/a     | Target group ARN for ALB to register ASG instances                        |
+| `sns_topic_arn`             | string | n/a     | ARN of the SNS topic for alarm notifications                              |
+| `alb_arn_suffix`            | string | n/a     | ARN suffix of the Application Load Balancer (used for CloudWatch metrics) |
+| `tg_arn_suffix`             | string | n/a     | ARN suffix of the Target Group (used for CloudWatch metrics)              |
 
-| Name                   | Type     | Default | Description                                                                 |
-| ---------------------- | -------- | ------- | --------------------------------------------------------------------------- |
-| `rds_name`             | string   | n/a     | Identifier/name for the RDS instance                                        |
-| `rds_username`         | string   | n/a     | Master username for the RDS database                                        |
-| `rds_password`         | string   | n/a     | Master password for the RDS database                                        |
-| `rds_database_subnets` | list(string)     | n/a     | List of database subnet IDs where the RDS instance will be deployed         |
-| `rds_security_group_id`| list(string)     | n/a     | Security group IDs associated with the RDS instance                         |
-| `rds_engine`           | string   | n/a     | Database engine (e.g., `mysql`, `postgres`, `mariadb`)                      |
-| `rds_engine_version`   | string   | n/a     | Version of the database engine                                              |
-| `rds_instance_class`   | string   | n/a     | Instance type/class for the RDS (e.g., `db.t3.micro`)                       |
-| `rds_allocated_storage`| number   | n/a     | Amount of storage (in GB) allocated for the RDS instance                    |
-| `rds_port`             | number   | n/a     | Port on which the database will accept connections (default usually `3306`) |
+#### 🔔 SNS Module Inputs (sns-module)
+
+| Name                     | Type   | Default | Description                                                 |
+| ------------------------ | ------ | ------- | ----------------------------------------------------------- |
+| `sns_topic_name`         | string | n/a     | Unique name for the SNS topic to be created                 |
+| `receiver_email_address` | string | n/a     | Email address subscribed to the SNS topic for notifications |
+
 
 
 ### 🗺️ Architecture Diagram
 
 The following diagram shows the architecture created by the examples using the custom modules:
 
-![image info](./Project6-rds-module.png  )
+![image info](./Project7-ASG-SNS-module.png)
 
 ### 🙋 Author  
 
